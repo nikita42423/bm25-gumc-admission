@@ -29,12 +29,17 @@ body {
 
 /* ---------- Шапка ---------- */
 .header {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+/* Содержимое шапки — в той же колонке, что и чат, а не у края окна */
+.header-inner {
   display: flex;
   align-items: center;
   gap: 14px;
+  max-width: 820px;
+  margin: 0 auto;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
 }
 .logo {
   width: 44px;
@@ -46,13 +51,13 @@ body {
 .subtitle { margin: 0; color: var(--text-muted); font-size: .9rem; }
 
 /* ---------- Лента чата ---------- */
+/* Область прокрутки на всю ширину (скроллбар у края окна),
+   а содержимое — в центральной колонке 820px. */
 .chat {
   flex: 1;
   overflow-y: auto;
   width: 100%;
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 20px 16px;
+  padding: 20px max(16px, calc((100% - 788px) / 2));
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -85,6 +90,29 @@ body {
   border-radius: var(--radius);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  animation: msg-in .35s ease-out both;
+}
+/* Сообщения пользователя выезжают справа, ответы — слева */
+.msg-user { --from-x: 16px; }
+.msg-bot  { --from-x: -16px; }
+
+@keyframes msg-in {
+  from { opacity: 0; transform: translate(var(--from-x, 0), 8px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Источники появляются чуть позже текста ответа */
+.source { animation: msg-in .35s ease-out both; --from-x: -8px; }
+.source:nth-child(2) { animation-delay: .1s; }
+.source:nth-child(3) { animation-delay: .18s; }
+.source:nth-child(4) { animation-delay: .26s; }
+
+/* Пока идёт поиск — мягкая пульсация текста «Ищу ответ…» */
+.msg-loading { animation: msg-in .35s ease-out both, pulse 1.4s ease-in-out .35s infinite; }
+@keyframes pulse { 50% { opacity: .55; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .msg, .source, .msg-loading { animation: none; }
 }
 .msg-user {
   align-self: flex-end;
@@ -175,6 +203,38 @@ mark {
 
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .ask input:focus-visible { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan); }
+
+/* ---------- Скроллбар: циановые ползунок и стрелки, фон прозрачный ---------- */
+.chat::-webkit-scrollbar { width: 12px; background: transparent; }
+.chat::-webkit-scrollbar-track { background: transparent; }
+.chat::-webkit-scrollbar-thumb {
+  background: var(--cyan);
+  border: 3px solid var(--bg);   /* «отступ» от краёв — ползунок выглядит тоньше */
+  border-radius: 999px;
+  box-shadow: 0 0 6px rgba(0, 255, 255, .6);
+}
+.chat::-webkit-scrollbar-thumb:hover { background: #7fffff; }
+.chat::-webkit-scrollbar-corner { background: transparent; }
+
+.chat::-webkit-scrollbar-button:single-button {
+  display: block;
+  height: 14px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 8px;
+}
+.chat::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8'%3E%3Cpath d='M5 0 10 8H0z' fill='%2300ffff'/%3E%3C/svg%3E");
+}
+.chat::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8'%3E%3Cpath d='M0 0h10L5 8z' fill='%2300ffff'/%3E%3C/svg%3E");
+}
+
+/* Firefox не поддерживает стрелки — только цвета ползунка и дорожки */
+@supports not selector(::-webkit-scrollbar) {
+  .chat { scrollbar-color: var(--cyan) transparent; scrollbar-width: thin; }
+}
 
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
