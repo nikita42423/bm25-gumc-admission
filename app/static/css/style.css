@@ -1,0 +1,187 @@
+/* Тёмная тема. Неон (cyan -> pink) — только для активных элементов:
+   кнопка «Найти», подсветка ключевых слов, иконки, логотип, фокус. */
+:root {
+  --bg: #0b1020;          /* глубокий тёмно-синий */
+  --surface: #151a2b;     /* графит */
+  --surface-2: #1d2338;
+  --border: #2a3150;
+  --text: #e6e9f2;
+  --text-muted: #9aa3bd;
+  --cyan: #00ffff;
+  --pink: #ff77ff;
+  --neon: linear-gradient(90deg, var(--cyan), var(--pink));
+  --radius: 14px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font: 18px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---------- Шапка ---------- */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.logo {
+  width: 44px;
+  height: auto;
+  flex: none;
+  filter: drop-shadow(0 0 4px rgba(0, 255, 255, .55)) drop-shadow(0 0 10px rgba(255, 213, 74, .35));
+}
+.header h1 { margin: 0; font-size: 1.15rem; font-weight: 650; }
+.subtitle { margin: 0; color: var(--text-muted); font-size: .9rem; }
+
+/* ---------- Лента чата ---------- */
+.chat {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.welcome {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.welcome p { margin: 0 0 10px; }
+.hint { color: var(--text-muted); font-size: .9rem; }
+.examples { display: flex; flex-wrap: wrap; gap: 8px; }
+.example {
+  font: inherit;
+  font-size: .9rem;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.example:hover { border-color: var(--cyan); }
+
+.msg {
+  max-width: 88%;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.msg-user {
+  align-self: flex-end;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.msg-bot {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.msg-error { border-color: #ff6b6b; color: #ffb3b3; }
+.msg-loading { color: var(--text-muted); font-style: italic; }
+
+/* Источники */
+.sources { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; white-space: normal; }
+.sources-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em;
+}
+.source {
+  display: block;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--cyan);
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.source-name { font-weight: 600; font-size: .95rem; }
+.source-text { margin: 4px 0 0; color: var(--text-muted); font-size: .95rem; }
+
+/* Подсветка ключевых слов — неоновый градиентный текст */
+mark {
+  background: var(--neon);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+
+/* ---------- Поле ввода ---------- */
+.ask {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 12px 16px 18px;
+}
+.ask input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+}
+.ask input::placeholder { color: var(--text-muted); }
+
+.btn-neon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-weight: 700;
+  color: #0b1020;
+  background: var(--neon);
+  border: 0;
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(0, 255, 255, .35), 0 0 22px rgba(255, 119, 255, .25);
+  transition: box-shadow .2s, transform .1s;
+}
+.btn-neon:hover { box-shadow: 0 0 18px rgba(0, 255, 255, .6), 0 0 30px rgba(255, 119, 255, .45); }
+.btn-neon:active { transform: translateY(1px); }
+.btn-neon:disabled { opacity: .55; cursor: wait; }
+
+.icon {
+  width: 20px; height: 20px;
+  fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round;
+}
+.icon-neon { stroke: var(--cyan); filter: drop-shadow(0 0 3px rgba(0, 255, 255, .7)); }
+
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.ask input:focus-visible { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan); }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  body { font-size: 17px; }
+  .msg { max-width: 100%; }
+  .btn-neon { padding: 12px 14px; }
+}

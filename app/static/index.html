@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Помощник абитуриента ГУИМЦ</title>
+  <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="header">
+    <img class="logo" src="/static/img/logo.svg" alt="Логотип ГУИМЦ">
+    <div>
+      <h1>Помощник абитуриента ГУИМЦ</h1>
+      <p class="subtitle">Ответы из документов приёмной комиссии</p>
+    </div>
+  </header>
+
+  <main class="chat" id="chat" aria-live="polite">
+    <section class="welcome" id="welcome">
+      <p>Напишите вопрос своими словами. Мы найдём ответ в документах приёмной комиссии и покажем, откуда он взят.</p>
+      <p class="hint">Например:</p>
+      <div class="examples">
+        <button type="button" class="example">Какие документы нужны для поступления?</button>
+        <button type="button" class="example">Когда заканчивается приём документов?</button>
+        <button type="button" class="example">Есть ли льготы для людей с инвалидностью?</button>
+      </div>
+    </section>
+  </main>
+
+  <form class="ask" id="ask-form" autocomplete="off">
+    <label class="visually-hidden" for="question">Ваш вопрос</label>
+    <input id="question" name="question" type="text" maxlength="500"
+           placeholder="Ваш вопрос…" required>
+    <button type="submit" class="btn-neon" id="ask-btn">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      Найти
+    </button>
+  </form>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

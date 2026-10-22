@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+
+# только для scripts/vectorize_logo.py
+pillow
+numpy
+potracer
