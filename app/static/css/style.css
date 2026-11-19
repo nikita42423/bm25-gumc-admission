@@ -193,8 +193,35 @@ mark {
 .llm-select:focus-visible { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan); }
 .llm-select option { background: var(--surface); color: var(--text); }
 
-/* Под ответом — какая модель его написала */
-.answer-meta { margin-top: 8px; color: var(--text-muted); font-size: .8rem; }
+/* Под ответом — «Скопировать» и какая модель его написала */
+.answer-footer {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+  margin-top: 10px; white-space: normal;
+}
+.answer-meta { color: var(--text-muted); font-size: .8rem; }
+
+/* Второстепенные кнопки («Очистить», «Скопировать») — спокойные:
+   неоновая только иконка, при наведении — циановая рамка */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: .85rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+.btn-ghost .icon { width: 16px; height: 16px; stroke-width: 2; }
+.btn-ghost:hover:not(:disabled) { border-color: var(--cyan); color: var(--text); }
+.btn-ghost:disabled { opacity: .4; cursor: not-allowed; }
+.btn-ghost:disabled .icon-neon { stroke: var(--text-muted); filter: none; }
+.btn-clear { margin-left: auto; flex: none; }
+.btn-copy.is-done { border-color: var(--cyan); color: var(--text); }
 
 .btn-neon {
   display: inline-flex;
