@@ -161,13 +161,24 @@ function renderAnswer(data, question) {
   return box;
 }
 
+const NOT_FOUND_TEXT = "Не нашёл ответа в документах. Попробуйте переформулировать вопрос.";
+const ERROR_TEXT = "Не удалось получить ответ. Проверьте соединение и попробуйте ещё раз.";
+const ROBOT_TIMEOUT_MS = 7000;   // робот не вернулся за это время — показываем ответ сами
+
 async function ask(question) {
   welcome?.remove();
-  addMessage("msg-user", question);
+  const userMsg = addMessage("msg-user", question);
   const pending = addMessage("msg-bot msg-loading", "Ищу ответ в документах…");
   button.disabled = true;
   const llm = llmSelect.value;
 
+  // Робот (robot.js) может унести копию вопроса и сам принести ответ — тогда он ставит accepted = true.
+  // Робота нет (телефон, узкое окно, «уменьшить движение») — accepted остаётся false.
+  const robot = { from: userMsg, text: question, accepted: false };
+  window.dispatchEvent(new CustomEvent("robot:search", { detail: robot }));
+
+  let show, text;
+  let found = false;
   try {
     const res = await fetch("/api/ask", {
       method: "POST",
@@ -176,21 +187,44 @@ async function ask(question) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    pending.classList.remove("msg-loading");
-    pending.textContent = "";
-    if (!data.answer && !data.sources?.length) {
-      pending.textContent = "Не нашёл ответа в документах. Попробуйте переформулировать вопрос.";
-    } else {
-      pending.append(renderAnswer(data, question));
-    }
+    const empty = !data.answer && !data.sources?.length;
+    found = Boolean(data.answer && data.sources?.length);
+    text = empty ? NOT_FOUND_TEXT : data.answer;
+    show = () => {
+      pending.classList.remove("msg-loading");
+      pending.textContent = "";
+      if (empty) pending.textContent = NOT_FOUND_TEXT;
+      else pending.append(renderAnswer(data, question));
+    };
   } catch (err) {
-    pending.className = "msg msg-bot msg-error";
-    pending.textContent = "Не удалось получить ответ. Проверьте соединение и попробуйте ещё раз.";
     console.error(err);
-  } finally {
+    text = ERROR_TEXT;
+    show = () => {
+      pending.className = "msg msg-bot msg-error";
+      pending.textContent = ERROR_TEXT;
+    };
+  }
+  deliver(robot, { found, text, target: pending, show });
+}
+
+// Показ ответа: без робота — сразу; с роботом — когда он вернётся и «отдаст» карточку
+// (robot.js сам вызовет deliver), но не позже ROBOT_TIMEOUT_MS.
+function deliver(robot, { found, text, target, show }) {
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    finish.done = true;          // робот видит, что ответ уже показан, и не несёт карточку
+    show();
     button.disabled = false;
     input.focus();
+  };
+  if (!robot.accepted) {
+    finish();
+    return;
   }
+  setTimeout(finish, ROBOT_TIMEOUT_MS);
+  window.dispatchEvent(new CustomEvent("robot:result", { detail: { found, text, target, deliver: finish } }));
 }
 
 form.addEventListener("submit", (e) => {

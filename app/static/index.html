@@ -53,6 +53,15 @@
     </button>
   </form>
 
+  <!-- 3D-робот слева от чата (только на широком экране; см. docs/interface/prototype.md) -->
+  <aside class="robot-stage" id="robot-stage" aria-hidden="true">
+    <canvas id="robot-canvas"></canvas>
+  </aside>
+
   <script src="/static/js/app.js"></script>
+  <script type="importmap">
+    { "imports": { "three": "/static/vendor/three.module.min.js" } }
+  </script>
+  <script type="module" src="/static/js/robot.js"></script>
 </body>
 </html>
