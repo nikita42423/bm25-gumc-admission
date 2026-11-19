@@ -14,7 +14,7 @@
 
 ## Стек
 - Бэкенд: Python 3.11, FastAPI, свой индекс и BM25, лемматизация pymorphy3.
-- LLM: YandexGPT через API Yandex Cloud (запасной вариант — локальная модель через Ollama).
+- LLM: Qwen 3.5 локально через Ollama; если она недоступна — YandexGPT (API Yandex Cloud).
 - Фронтенд: HTML + CSS + JavaScript без сборки (`app/static`), тёмная тема с неоновыми акцентами.
 
 ## Запуск
@@ -27,10 +27,14 @@ python -m app
 Открыть http://localhost:8000. Корпус (`data/corpus/fragments.jsonl`) уже в репозитории;
 пересобрать из PDF: `python scripts/build_corpus.py`.
 
-Для ответов LLM скопировать `.env.example` в `.env` и вписать `YANDEX_API_KEY` (API-ключ
-сервисного аккаунта с ролью `ai.languageModels.user`) и `YANDEX_FOLDER_ID` (id каталога Yandex Cloud).
-Без ключа чат работает, но вместо ответа показывает найденные фрагменты документов.
-Локальная модель вместо API: `LLM_PROVIDER=ollama` в `.env`, затем `ollama pull qwen3.5:4b`.
+LLM подключаются цепочкой: сначала Ollama, если она выключена или сломалась — YandexGPT,
+если и она недоступна — чат показывает найденные фрагменты документов без ответа.
+Настройка — скопировать `.env.example` в `.env`:
+- Ollama: установить https://ollama.com/download, затем `ollama pull qwen3.5:4b`;
+- YandexGPT: вписать `YANDEX_API_KEY` (API-ключ сервисного аккаунта с ролью
+  `ai.languageModels.user`) и `YANDEX_FOLDER_ID` (id каталога Yandex Cloud).
+
+Достаточно любой одной из двух.
 
 ## Проверка
 ```bash
@@ -41,7 +45,7 @@ python benchmark/run.py --answers     # + ответы LLM: Accuracy и Correct 
 Результаты — в [benchmark/results.md](benchmark/results.md).
 
 ## Структура
-- `app/` — сервер: `main.py` (API), `rag.py` (промпт и ответ), `llm.py` (YandexGPT / Ollama),
+- `app/` — сервер: `main.py` (API), `rag.py` (промпт и ответ), `llm.py` (Ollama → YandexGPT),
   `search/` (предобработка, синонимы, BM25); фронтенд — `static/`.
 - `data/` — PDF приёмной комиссии, `sources.csv`, фрагменты корпуса `corpus/`.
 - `benchmark/` — тестовые вопросы, разметка, скрипт метрик и результаты.

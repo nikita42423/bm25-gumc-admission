@@ -4,6 +4,17 @@ const form = document.getElementById("ask-form");
 const input = document.getElementById("question");
 const button = document.getElementById("ask-btn");
 const welcome = document.getElementById("welcome");
+const llmSelect = document.getElementById("llm");
+
+// Выбор модели запоминаем в браузере, чтобы не выбирать заново после перезагрузки.
+const LLM_NAMES = { ollama: "Ollama (локально)", yandex: "YandexGPT" };
+try {
+  const saved = localStorage.getItem("llm");
+  if (saved && [...llmSelect.options].some((o) => o.value === saved)) llmSelect.value = saved;
+} catch {}
+llmSelect.addEventListener("change", () => {
+  try { localStorage.setItem("llm", llmSelect.value); } catch {}
+});
 
 const STOP_WORDS = new Set([
   "и", "в", "во", "на", "с", "со", "по", "к", "у", "о", "об", "из", "за", "для",
@@ -73,6 +84,12 @@ function renderAnswer(data, question) {
     }
     box.append(list);
   }
+  if (data.llm) {
+    const meta = document.createElement("div");
+    meta.className = "answer-meta";
+    meta.textContent = `Ответ написала модель: ${LLM_NAMES[data.llm] || data.llm}`;
+    box.append(meta);
+  }
   return box;
 }
 
@@ -81,12 +98,13 @@ async function ask(question) {
   addMessage("msg-user", question);
   const pending = addMessage("msg-bot msg-loading", "Ищу ответ в документах…");
   button.disabled = true;
+  const llm = llmSelect.value;
 
   try {
     const res = await fetch("/api/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, llm }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();

@@ -85,9 +85,9 @@ def run_answers(queries) -> list[dict]:
         r = answer_question(q["question"])
         out.append({"id": q["id"], "type": q["type"], "question": q["question"],
                     "reference": q.get("reference", ""), "answer": r["answer"],
-                    "refused": r["refused"], "llm_ok": r["llm_ok"],
+                    "refused": r["refused"], "llm_ok": r["llm_ok"], "llm": r["llm"],
                     "sources": [h["id"] for h in r["sources"]], "seconds": round(time.time() - t, 1)})
-        print(f"  {q['id']} ({out[-1]['seconds']} с): {r['answer'][:80]}")
+        print(f"  {q['id']} ({out[-1]['seconds']} с, {r['llm'] or '—'}): {r['answer'][:80]}")
     return out
 
 
@@ -137,11 +137,11 @@ def write_report(search: dict, rows: list[dict] | None, answers: list[dict] | No
         md.append(f"| {q['id']} | {q['found']} | {q['rank'] or '—'} | {missed} |")
     md.append("")
     if answers:
-        md += ["## Ответы по вопросам", "", "| # | Тип | Отказ | Ответ системы |", "|---|---|---|---|"]
+        md += ["## Ответы по вопросам", "", "| # | Тип | LLM | Отказ | Ответ системы |", "|---|---|---|---|---|"]
         for a in answers:
             text = a["answer"].replace("\n", " ").replace("|", "/")
             md.append(f"| {a['id']} | {'ловушка' if a['type'] == 'trap' else 'обычный'} | "
-                      f"{'да' if a['refused'] else 'нет'} | {text} |")
+                      f"{a.get('llm') or '—'} | {'да' if a['refused'] else 'нет'} | {text} |")
         md.append("")
     RESULTS_MD.write_text("\n".join(md), encoding="utf-8")
 

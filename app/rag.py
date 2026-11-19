@@ -45,30 +45,49 @@ def source_title(hit: dict) -> str:
     return f"{hit['title']}, {where}"
 
 
+# Выбор модели в интерфейсе → порядок попыток. auto — цепочка из .env (LLM_PROVIDERS).
+LLM_CHOICES = {"auto": None, "ollama": ["ollama"], "yandex": ["yandex"], "none": []}
+
+UNAVAILABLE = ("Не удалось сформировать ответ: языковая модель сейчас недоступна. "
+               "Ниже — фрагменты документов, где, скорее всего, есть ответ.")
+FRAGMENTS_ONLY = "Ответ модели выключен. Ниже — фрагменты документов, где, скорее всего, есть ответ."
+
+
 def answer_question(question: str, k: int = TOP_K,
-                    llm_call: Callable[[list[dict]], str] | None = None) -> dict:
+                    llm_call: Callable[[list[dict]], str] | None = None,
+                    llm_choice: str = "auto") -> dict:
     """Ответ для API и benchmark.
 
+    llm_choice — auto / ollama / yandex / none (см. LLM_CHOICES); llm_call — замена LLM в тестах.
     Возвращает: answer, sources (показываются пользователю), hits (все найденные top-k),
-    refused (True — система сообщила, что сведений нет), llm_ok (False — LLM недоступна).
+    refused (True — система сообщила, что сведений нет), llm_ok (False — LLM недоступна),
+    llm (какая модель ответила или None).
     """
-    llm_call = llm_call or llm.chat
     hits = get_searcher().retrieve(question, k)
-    if not hits or hits[0]["score"] < MIN_SCORE:
-        return {"answer": NO_INFO, "sources": [], "hits": hits, "refused": True, "llm_ok": True}
 
+    def result(answer, sources, refused=False, llm_ok=True, provider=None):
+        return {"answer": answer, "sources": sources, "hits": hits,
+                "refused": refused, "llm_ok": llm_ok, "llm": provider}
+
+    if not hits or hits[0]["score"] < MIN_SCORE:
+        return result(NO_INFO, [], refused=True)
+
+    providers = LLM_CHOICES[llm_choice]
+    if providers == []:
+        return result(FRAGMENTS_ONLY, hits)
+
+    messages = build_messages(question, build_context(hits))
     try:
-        reply = llm_call(build_messages(question, build_context(hits)))
+        if llm_call:
+            reply, provider = llm_call(messages), None
+        else:
+            reply, provider = llm.chat_with_provider(messages, providers)
     except llm.LLMUnavailable:
-        return {
-            "answer": "Не удалось сформировать ответ: языковая модель сейчас недоступна. "
-                      "Ниже — фрагменты документов, где, скорее всего, есть ответ.",
-            "sources": hits, "hits": hits, "refused": False, "llm_ok": False,
-        }
+        return result(UNAVAILABLE, hits, llm_ok=False)
 
     if is_refusal(reply):
-        return {"answer": NO_INFO, "sources": [], "hits": hits, "refused": True, "llm_ok": True}
+        return result(NO_INFO, [], refused=True, provider=provider)
 
     cited = sorted({int(n) for n in re.findall(r"\[(\d+)\]", reply) if 1 <= int(n) <= len(hits)})
     sources = [hits[n - 1] for n in cited] or hits
-    return {"answer": reply, "sources": sources, "hits": hits, "refused": False, "llm_ok": True}
+    return result(reply, sources, provider=provider)

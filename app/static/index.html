@@ -34,6 +34,14 @@
     <label class="visually-hidden" for="question">Ваш вопрос</label>
     <input id="question" name="question" type="text" maxlength="500"
            placeholder="Ваш вопрос…" required>
+    <label class="visually-hidden" for="llm">Модель для ответа</label>
+    <select id="llm" name="llm" class="llm-select"
+            title="Кто пишет ответ по найденным документам">
+      <option value="auto">Авто</option>
+      <option value="ollama">Ollama</option>
+      <option value="yandex">Яндекс</option>
+      <option value="none">Нет</option>
+    </select>
     <button type="submit" class="btn-neon" id="ask-btn">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
       Найти
