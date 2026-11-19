@@ -193,8 +193,35 @@ mark {
 .llm-select:focus-visible { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan); }
 .llm-select option { background: var(--surface); color: var(--text); }
 
-/* Под ответом — какая модель его написала */
-.answer-meta { margin-top: 8px; color: var(--text-muted); font-size: .8rem; }
+/* Под ответом — «Скопировать» и какая модель его написала */
+.answer-footer {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+  margin-top: 10px; white-space: normal;
+}
+.answer-meta { color: var(--text-muted); font-size: .8rem; }
+
+/* Второстепенные кнопки («Очистить», «Скопировать») — спокойные:
+   неоновая только иконка, при наведении — циановая рамка */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: .85rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+.btn-ghost .icon { width: 16px; height: 16px; stroke-width: 2; }
+.btn-ghost:hover:not(:disabled) { border-color: var(--cyan); color: var(--text); }
+.btn-ghost:disabled { opacity: .4; cursor: not-allowed; }
+.btn-ghost:disabled .icon-neon { stroke: var(--text-muted); filter: none; }
+.btn-clear { margin-left: auto; flex: none; }
+.btn-copy.is-done { border-color: var(--cyan); color: var(--text); }
 
 .btn-neon {
   display: inline-flex;
@@ -255,6 +282,47 @@ mark {
 @supports not selector(::-webkit-scrollbar) {
   .chat { scrollbar-color: var(--cyan) transparent; scrollbar-width: thin; }
 }
+
+/* ---------- 3D-робот слева от чата ---------- */
+/* Только на широком экране: на телефоне и в узком окне его нет. Стоит внизу слева,
+   в свободной полосе между краем окна и колонкой чата (820px). */
+.robot-stage { display: none; }
+@media (min-width: 1280px) {
+  .robot-stage {
+    display: block;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: calc((100vw - 820px) / 2);
+    height: min(calc(100vh - 80px), calc((100vw - 820px) / 2 * 1.35));
+    pointer-events: none;
+  }
+  .robot-stage[hidden] { display: none; }
+  /* холст ловит мышь (щекотка); сам робот решает, попал ли щелчок в него */
+  .robot-stage canvas { display: block; width: 100%; height: 100%; pointer-events: auto; }
+}
+
+/* Карточка сообщения, которая летит между чатом и руками робота */
+.robot-fly {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 20;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: .9rem;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  transform-origin: center;
+}
+.robot-fly-answer { border-color: var(--cyan); box-shadow: 0 0 14px rgba(0, 255, 255, .35); }
+.robot-fly-empty { background: var(--surface); color: var(--text-muted); }
 
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;

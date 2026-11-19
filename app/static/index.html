@@ -15,6 +15,11 @@
         <h1>Помощник абитуриента ГУИМЦ</h1>
         <p class="subtitle">Ответы из документов приёмной комиссии</p>
       </div>
+      <button type="button" class="btn-ghost btn-clear" id="clear-btn" disabled
+              title="Удалить все сообщения и вернуться к началу">
+        <svg class="icon icon-neon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>
+        Очистить
+      </button>
     </div>
   </header>
 
@@ -48,6 +53,15 @@
     </button>
   </form>
 
+  <!-- 3D-робот слева от чата (только на широком экране; см. docs/interface/prototype.md) -->
+  <aside class="robot-stage" id="robot-stage" aria-hidden="true">
+    <canvas id="robot-canvas"></canvas>
+  </aside>
+
   <script src="/static/js/app.js"></script>
+  <script type="importmap">
+    { "imports": { "three": "/static/vendor/three.module.min.js" } }
+  </script>
+  <script type="module" src="/static/js/robot.js"></script>
 </body>
 </html>

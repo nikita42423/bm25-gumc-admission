@@ -5,6 +5,7 @@ const input = document.getElementById("question");
 const button = document.getElementById("ask-btn");
 const welcome = document.getElementById("welcome");
 const llmSelect = document.getElementById("llm");
+const clearBtn = document.getElementById("clear-btn");
 
 // Выбор модели запоминаем в браузере, чтобы не выбирать заново после перезагрузки.
 const LLM_NAMES = { ollama: "Ollama (локально)", yandex: "YandexGPT" };
@@ -53,7 +54,69 @@ function addMessage(cls, content) {
   else div.append(content);
   chat.append(div);
   div.scrollIntoView({ behavior: "smooth", block: "end" });
+  updateClearButton();
   return div;
+}
+
+// «Очистить» активна, только когда в чате есть сообщения.
+function updateClearButton() {
+  clearBtn.disabled = !chat.querySelector(".msg");
+}
+
+// Удаляем все сообщения и возвращаем приветствие с примерами вопросов
+// (тот же элемент, поэтому кнопки-примеры продолжают работать).
+function clearChat() {
+  chat.querySelectorAll(".msg").forEach((m) => m.remove());
+  chat.prepend(welcome);
+  chat.scrollTop = 0;
+  updateClearButton();
+  input.focus();
+}
+
+// Кнопка «Скопировать» под ответом: кладёт текст в буфер обмена
+// и на 2 секунды меняет подпись на «Скопировано ✓».
+function copyButton(text) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "btn-ghost btn-copy";
+  const label = document.createElement("span");
+  label.textContent = "Скопировать";
+  btn.innerHTML =
+    '<svg class="icon icon-neon" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h9"/></svg>';
+  btn.append(label);
+  let timer;
+  btn.addEventListener("click", async () => {
+    const ok = await copyText(text);
+    label.textContent = ok ? "Скопировано ✓" : "Не удалось скопировать";
+    btn.classList.toggle("is-done", ok);
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      label.textContent = "Скопировать";
+      btn.classList.remove("is-done");
+    }, 2000);
+  });
+  return btn;
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Запасной путь: буфер обмена недоступен (например, сайт открыт по http с телефона).
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.append(area);
+    area.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch {}
+    area.remove();
+    return ok;
+  }
 }
 
 function renderAnswer(data, question) {
@@ -84,22 +147,38 @@ function renderAnswer(data, question) {
     }
     box.append(list);
   }
+  const footer = document.createElement("div");
+  footer.className = "answer-footer";
+  // Копировать имеет смысл только настоящий ответ — с источниками, а не отказ «нет информации».
+  if (data.sources?.length) footer.append(copyButton(data.answer));
   if (data.llm) {
     const meta = document.createElement("div");
     meta.className = "answer-meta";
     meta.textContent = `Ответ написала модель: ${LLM_NAMES[data.llm] || data.llm}`;
-    box.append(meta);
+    footer.append(meta);
   }
+  if (footer.childElementCount) box.append(footer);
   return box;
 }
 
+const NOT_FOUND_TEXT = "Не нашёл ответа в документах. Попробуйте переформулировать вопрос.";
+const ERROR_TEXT = "Не удалось получить ответ. Проверьте соединение и попробуйте ещё раз.";
+const ROBOT_TIMEOUT_MS = 7000;   // робот не вернулся за это время — показываем ответ сами
+
 async function ask(question) {
   welcome?.remove();
-  addMessage("msg-user", question);
+  const userMsg = addMessage("msg-user", question);
   const pending = addMessage("msg-bot msg-loading", "Ищу ответ в документах…");
   button.disabled = true;
   const llm = llmSelect.value;
 
+  // Робот (robot.js) может унести копию вопроса и сам принести ответ — тогда он ставит accepted = true.
+  // Робота нет (телефон, узкое окно, «уменьшить движение») — accepted остаётся false.
+  const robot = { from: userMsg, text: question, accepted: false };
+  window.dispatchEvent(new CustomEvent("robot:search", { detail: robot }));
+
+  let show, text;
+  let found = false;
   try {
     const res = await fetch("/api/ask", {
       method: "POST",
@@ -108,21 +187,44 @@ async function ask(question) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    pending.classList.remove("msg-loading");
-    pending.textContent = "";
-    if (!data.answer && !data.sources?.length) {
-      pending.textContent = "Не нашёл ответа в документах. Попробуйте переформулировать вопрос.";
-    } else {
-      pending.append(renderAnswer(data, question));
-    }
+    const empty = !data.answer && !data.sources?.length;
+    found = Boolean(data.answer && data.sources?.length);
+    text = empty ? NOT_FOUND_TEXT : data.answer;
+    show = () => {
+      pending.classList.remove("msg-loading");
+      pending.textContent = "";
+      if (empty) pending.textContent = NOT_FOUND_TEXT;
+      else pending.append(renderAnswer(data, question));
+    };
   } catch (err) {
-    pending.className = "msg msg-bot msg-error";
-    pending.textContent = "Не удалось получить ответ. Проверьте соединение и попробуйте ещё раз.";
     console.error(err);
-  } finally {
+    text = ERROR_TEXT;
+    show = () => {
+      pending.className = "msg msg-bot msg-error";
+      pending.textContent = ERROR_TEXT;
+    };
+  }
+  deliver(robot, { found, text, target: pending, show });
+}
+
+// Показ ответа: без робота — сразу; с роботом — когда он вернётся и «отдаст» карточку
+// (robot.js сам вызовет deliver), но не позже ROBOT_TIMEOUT_MS.
+function deliver(robot, { found, text, target, show }) {
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    finish.done = true;          // робот видит, что ответ уже показан, и не несёт карточку
+    show();
     button.disabled = false;
     input.focus();
+  };
+  if (!robot.accepted) {
+    finish();
+    return;
   }
+  setTimeout(finish, ROBOT_TIMEOUT_MS);
+  window.dispatchEvent(new CustomEvent("robot:result", { detail: { found, text, target, deliver: finish } }));
 }
 
 form.addEventListener("submit", (e) => {
@@ -136,3 +238,5 @@ form.addEventListener("submit", (e) => {
 document.querySelectorAll(".example").forEach((btn) =>
   btn.addEventListener("click", () => ask(btn.textContent)),
 );
+
+clearBtn.addEventListener("click", clearChat);
