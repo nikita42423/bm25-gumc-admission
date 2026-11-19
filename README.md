@@ -13,7 +13,8 @@
 4. Пользователь видит ответ и ссылку на источник.
 
 ## Стек
-- Бэкенд: Python 3.11, FastAPI, поиск BM25 (RAG).
+- Бэкенд: Python 3.11, FastAPI, свой индекс и BM25, лемматизация pymorphy3.
+- LLM: YandexGPT через API Yandex Cloud (запасной вариант — локальная модель через Ollama).
 - Фронтенд: HTML + CSS + JavaScript без сборки (`app/static`), тёмная тема с неоновыми акцентами.
 
 ## Запуск
@@ -23,14 +24,30 @@ python -m venv .venv
 pip install -r requirements.txt
 python -m app
 ```
-Открыть http://localhost:8000. Сейчас `/api/ask` отвечает заглушкой — поиск BM25 и LLM в работе.
+Открыть http://localhost:8000. Корпус (`data/corpus/fragments.jsonl`) уже в репозитории;
+пересобрать из PDF: `python scripts/build_corpus.py`.
+
+Для ответов LLM скопировать `.env.example` в `.env` и вписать `YANDEX_API_KEY` (API-ключ
+сервисного аккаунта с ролью `ai.languageModels.user`) и `YANDEX_FOLDER_ID` (id каталога Yandex Cloud).
+Без ключа чат работает, но вместо ответа показывает найденные фрагменты документов.
+Локальная модель вместо API: `LLM_PROVIDER=ollama` в `.env`, затем `ollama pull qwen3.5:4b`.
+
+## Проверка
+```bash
+pytest tests                          # автотесты (LLM не нужна)
+python benchmark/run.py --compare     # Recall@5 и MRR поиска, сравнение настроек
+python benchmark/run.py --answers     # + ответы LLM: Accuracy и Correct Rejection Rate
+```
+Результаты — в [benchmark/results.md](benchmark/results.md).
 
 ## Структура
-- `app/` — сервер (`main.py`) и фронтенд (`static/`: `index.html`, `css/`, `js/`, `img/`).
-- `spec/` — продуктовая и техническая спецификация (SDD).
-- `docs/interface/` — прототип интерфейса и исходники логотипа.
-- `benchmark/` — тестовые вопросы для оценки поиска.
-- `scripts/vectorize_logo.py` — перевод логотипа в векторный неоновый SVG.
+- `app/` — сервер: `main.py` (API), `rag.py` (промпт и ответ), `llm.py` (YandexGPT / Ollama),
+  `search/` (предобработка, синонимы, BM25); фронтенд — `static/`.
+- `data/` — PDF приёмной комиссии, `sources.csv`, фрагменты корпуса `corpus/`.
+- `benchmark/` — тестовые вопросы, разметка, скрипт метрик и результаты.
+- `scripts/` — сборка корпуса из PDF, перевод логотипа в SVG.
+- `spec/` — продуктовая и техническая спецификация (SDD); `tests/` — автотесты.
+- `docs/` — интерфейс, правила команды, задачи участников.
 
 ## Команда "Поиск Эспрессо"
 Зоны ответственности — по трём зонам курса, постоянные. Каждый участник понимает
