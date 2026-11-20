@@ -126,6 +126,8 @@ body {
 }
 .msg-error { border-color: #ff6b6b; color: #ffb3b3; }
 .msg-loading { color: var(--text-muted); font-style: italic; }
+/* место под ответ, который несёт робот: занимает ширину ответа, но не видно */
+.msg-slot { visibility: hidden; width: 88%; min-height: 46px; }
 
 /* Источники */
 .sources { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; white-space: normal; }
@@ -133,18 +135,46 @@ body {
   display: flex; align-items: center; gap: 6px;
   font-size: .85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em;
 }
-.source {
-  display: block;
-  padding: 10px 12px;
+/* Все источники — в одном окне; документы внутри разделены тонкой линией */
+.sources-items {
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px;
   background: var(--bg);
   border: 1px solid var(--border);
   border-left: 3px solid var(--cyan);
   border-radius: 8px;
-  color: inherit;
-  text-decoration: none;
 }
+.source { display: block; padding: 10px 0; }
+.source + .source { border-top: 1px solid var(--border); }
 .source-name { font-weight: 600; font-size: .95rem; }
-.source-text { margin: 4px 0 0; color: var(--text-muted); font-size: .95rem; }
+.source-text { margin: 6px 0 0; color: var(--text-muted); font-size: .95rem; }
+
+/* Свёрнутые источники: видны названия и «Скачать документ», фрагменты скрыты до «Показать» */
+.sources:not(.is-open) .source-text,
+.sources:not(.is-open) .btn-download { display: none; }   /* «Скачать документ» — только после «Показать» */
+
+/* Пункты документа: в свёрнутом виде — метки в строку, после «Показать» — столбиком с фрагментами */
+.source-points { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.sources:not(.is-open) .source-points { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+.point-label {
+  display: inline-block;
+  font-size: .8rem;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 10px;
+}
+.sources.is-open .source-text { margin-top: 4px; }
+.source-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.btn-toggle { margin-left: auto; text-transform: none; letter-spacing: 0; }
+.btn-toggle .icon { transition: transform .2s; }
+.sources.is-open .btn-toggle .icon { transform: rotate(180deg); }
+.btn-download { flex: none; text-decoration: none; padding: 3px 10px; font-size: .8rem; }
+@media (prefers-reduced-motion: reduce) {
+  .btn-toggle .icon { transition: none; }
+}
 
 /* Подсветка ключевых слов — неоновый градиентный текст */
 mark {

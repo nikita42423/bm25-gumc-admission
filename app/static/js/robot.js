@@ -481,7 +481,9 @@ function createRobotScene(THREE, RoundedBoxGeometry, RoomEnvironment) {
     return { left: c.x - width / 2, top: c.y - width * 0.31, width, height: width * 0.62 };
   }
   // from/to — прямоугольники {left, top, width, height}; карточка летит по дуге через верх.
-  function fly(text, kind, from, to, duration) {
+  // spread — карточка садится в левый верхний угол to, а её текст на подлёте гаснет:
+  // из этой пустой рамки ответ раскрывается вправо и вниз (app.js, unfold).
+  function fly(text, kind, from, to, duration, spread = false) {
     const el = document.createElement("div");
     el.className = `robot-fly robot-fly-${kind}`;
     el.textContent = text;
@@ -497,7 +499,16 @@ function createRobotScene(THREE, RoundedBoxGeometry, RoomEnvironment) {
       left: (from.left + to.left) / 2, width: (from.width + to.width) / 2,
       top: Math.min(from.top, to.top) - 90, height: (from.height + to.height) / 2,
     };
-    const anim = el.animate([at(from), at(mid), at(to)], { duration, easing: "cubic-bezier(.4,0,.2,1)" });
+    let frames = [at(from), at(mid), at(to)];
+    if (spread) {
+      const cs = getComputedStyle(el);
+      const look = { color: cs.color, borderColor: cs.borderColor, background: cs.backgroundColor, boxShadow: cs.boxShadow };
+      frames = [at(from), { ...at(mid), ...look }, {
+        transform: `translate(${to.left}px, ${to.top}px)`,    // левый верхний угол, без масштаба
+        color: "transparent", borderColor: "var(--border)", background: "var(--surface)", boxShadow: "none",
+      }];
+    }
+    const anim = el.animate(frames, { duration, easing: "cubic-bezier(.4,0,.2,1)" });
     return anim.finished.then(() => el.remove(), () => el.remove());
   }
 
@@ -558,7 +569,7 @@ function createRobotScene(THREE, RoundedBoxGeometry, RoomEnvironment) {
         const from = cardRect();
         card.visible = false;
         const target = r.target?.isConnected && !r.deliver.done ? r.target.getBoundingClientRect() : null;
-        if (target) fly(r.text, r.found ? "answer" : "empty", from, target, 800).then(() => r.deliver());
+        if (target) fly(r.text, r.found ? "answer" : "empty", from, target, 800, true).then(() => r.deliver());
         else r.deliver();
         setPose(r.found ? "present" : "shrug");                 // показывает обе руки
       }),

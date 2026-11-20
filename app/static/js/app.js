@@ -119,34 +119,117 @@ async function copyText(text) {
   }
 }
 
+// Блок «Источники» — одно окно с разделами по документам. Сначала свёрнут: видны названия и метки
+// пунктов. «Показать» раскрывает фрагменты и кнопку «Скачать документ» (полный PDF), «Скрыть» — сворачивает.
+let sourcesCount = 0;
+function renderSources(sources, words) {
+  const list = document.createElement("div");
+  list.className = "sources";
+  const id = `sources-${++sourcesCount}`;
+
+  const head = document.createElement("div");
+  head.className = "sources-title";
+  head.innerHTML =
+    '<svg class="icon icon-neon" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>';
+  const docs = groupByDocument(sources);
+  head.append(`Источники (${docs.length})`);         // сколько документов в окне
+
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "btn-ghost btn-toggle";
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-controls", id);
+  toggle.innerHTML =
+    '<svg class="icon icon-neon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  const label = document.createElement("span");
+  label.textContent = "Показать";
+  toggle.append(label);
+  toggle.addEventListener("click", () => {
+    const open = list.classList.toggle("is-open");
+    toggle.setAttribute("aria-expanded", String(open));
+    label.textContent = open ? "Скрыть" : "Показать";
+  });
+  head.append(toggle);
+  list.append(head);
+
+  const items = document.createElement("div");
+  items.className = "sources-items";
+  items.id = id;
+  // Один документ — один раздел окна: название, одна кнопка «Скачать документ» и список его пунктов.
+  for (const doc of docs) {
+    const item = document.createElement("div");
+    item.className = "source";
+    const top = document.createElement("div");
+    top.className = "source-head";
+    const name = document.createElement("div");
+    name.className = "source-name";
+    name.textContent = doc.name;
+    top.append(name);
+    if (doc.url) top.append(downloadLink(doc.url, doc.name));
+
+    const points = document.createElement("ul");
+    points.className = "source-points";
+    for (const p of doc.points) {
+      const li = document.createElement("li");
+      li.className = "source-point";
+      const tag = document.createElement("span");
+      tag.className = "point-label";
+      tag.textContent = p.label;
+      const text = document.createElement("p");
+      text.className = "source-text";
+      text.append(highlight(p.fragment, words));
+      li.append(tag, text);
+      points.append(li);
+    }
+    item.append(top, points);
+    items.append(item);
+  }
+  list.append(items);
+  return list;
+}
+
+// «Правила приёма 2026, п. 2.8» → документ «Правила приёма 2026» и пункт «п. 2.8».
+// Фрагменты одного документа (одна ссылка на PDF) собираем вместе; пункты — по порядку номеров.
+function groupByDocument(sources) {
+  const docs = new Map();
+  for (const s of sources) {
+    const m = s.title.match(/^(.*?),\s*((?:п\.|пп\.|стр\.|раздел|глава|приложение)\s*.*)$/i);
+    const name = m ? m[1] : s.title;
+    const label = m ? m[2] : "фрагмент";
+    const url = s.url && s.url !== "#" ? s.url : "";
+    const key = url || name;
+    if (!docs.has(key)) docs.set(key, { name, url, points: [] });
+    docs.get(key).points.push({ label, fragment: s.fragment });
+  }
+  for (const d of docs.values()) {
+    d.points.sort((a, b) => a.label.localeCompare(b.label, "ru", { numeric: true }));
+  }
+  return [...docs.values()];
+}
+
+// «Скачать документ» — весь PDF приёмной комиссии по ссылке с сайта МГТУ (а не найденные фрагменты).
+function downloadLink(url, title) {
+  const a = document.createElement("a");
+  a.className = "btn-ghost btn-download";
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener";
+  a.download = "";
+  a.title = `Скачать полный документ: ${title}`;
+  a.innerHTML =
+    '<svg class="icon icon-neon" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>';
+  a.append("Скачать документ");
+  return a;
+}
+
 function renderAnswer(data, question) {
   const words = keywords(question);
   const box = document.createDocumentFragment();
   box.append(highlight(data.answer, words));
 
-  if (data.sources?.length) {
-    const list = document.createElement("div");
-    list.className = "sources";
-    list.innerHTML =
-      '<div class="sources-title"><svg class="icon icon-neon" viewBox="0 0 24 24" aria-hidden="true">' +
-      '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>Источники</div>';
-    for (const s of data.sources) {
-      const a = document.createElement("a");
-      a.className = "source";
-      a.href = s.url || "#";
-      a.target = "_blank";
-      a.rel = "noopener";
-      const name = document.createElement("div");
-      name.className = "source-name";
-      name.textContent = s.title;
-      const text = document.createElement("p");
-      text.className = "source-text";
-      text.append(highlight(s.fragment, words));
-      a.append(name, text);
-      list.append(a);
-    }
-    box.append(list);
-  }
+  if (data.sources?.length) box.append(renderSources(data.sources, words));
   const footer = document.createElement("div");
   footer.className = "answer-footer";
   // Копировать имеет смысл только настоящий ответ — с источниками, а не отказ «нет информации».
@@ -168,7 +251,6 @@ const ROBOT_TIMEOUT_MS = 7000;   // робот не вернулся за это
 async function ask(question) {
   welcome?.remove();
   const userMsg = addMessage("msg-user", question);
-  const pending = addMessage("msg-bot msg-loading", "Ищу ответ в документах…");
   button.disabled = true;
   const llm = llmSelect.value;
 
@@ -176,6 +258,10 @@ async function ask(question) {
   // Робота нет (телефон, узкое окно, «уменьшить движение») — accepted остаётся false.
   const robot = { from: userMsg, text: question, accepted: false };
   window.dispatchEvent(new CustomEvent("robot:search", { detail: robot }));
+  // Ответ несёт робот — вместо «Ищу ответ…» пустое невидимое место, куда прилетит карточка.
+  const pending = robot.accepted
+    ? addMessage("msg-bot msg-slot", "")
+    : addMessage("msg-bot msg-loading", "Ищу ответ в документах…");
 
   let show, text;
   let found = false;
@@ -191,7 +277,7 @@ async function ask(question) {
     found = Boolean(data.answer && data.sources?.length);
     text = empty ? NOT_FOUND_TEXT : data.answer;
     show = () => {
-      pending.classList.remove("msg-loading");
+      pending.classList.remove("msg-loading", "msg-slot");
       pending.textContent = "";
       if (empty) pending.textContent = NOT_FOUND_TEXT;
       else pending.append(renderAnswer(data, question));
@@ -216,6 +302,7 @@ function deliver(robot, { found, text, target, show }) {
     done = true;
     finish.done = true;          // робот видит, что ответ уже показан, и не несёт карточку
     show();
+    unfold(target);
     button.disabled = false;
     input.focus();
   };
@@ -225,6 +312,22 @@ function deliver(robot, { found, text, target, show }) {
   }
   setTimeout(finish, ROBOT_TIMEOUT_MS);
   window.dispatchEvent(new CustomEvent("robot:result", { detail: { found, text, target, deliver: finish } }));
+}
+
+// Ответ раскрывается из левого верхнего угла, где села пустая карточка робота (robot.js, fly):
+// сначала вправо до своей ширины, потом вниз. clip-path только обрезает видимую часть,
+// текст при этом не перестраивается.
+const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
+function unfold(el) {
+  if (REDUCED_MOTION.matches || !el.isConnected) return;
+  const { width, height } = el.getBoundingClientRect();
+  const right = Math.max(0, width - 320);    // 320 px — ширина летящей карточки
+  const below = Math.max(0, height - 46);    // 46 px — её высота (с запасом)
+  el.animate([
+    { clipPath: `inset(0 ${right}px ${below}px 0 round 14px)` },
+    { clipPath: `inset(0 0 ${below}px 0 round 14px)`, offset: 0.35 },
+    { clipPath: "inset(0 0 0 0 round 14px)" },
+  ], { duration: 700, easing: "cubic-bezier(.4,0,.2,1)" });
 }
 
 form.addEventListener("submit", (e) => {
