@@ -1,5 +1,9 @@
 fastapi
 uvicorn
+httpx          # запросы к Ollama
+pymorphy3      # лемматизация
+pymupdf        # scripts/build_corpus.py: текст из PDF
+pytest
 
 # только для scripts/vectorize_logo.py
 pillow

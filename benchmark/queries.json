@@ -1,0 +1,365 @@
+[
+ {
+  "id": "Q01",
+  "type": "regular",
+  "question": "Какие документы нужно принести для поступления?",
+  "relevant": [
+   "rules_2_8",
+   "rules_2_11",
+   "rules_2_20",
+   "rules_2_21",
+   "rules_2_26"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q02",
+  "type": "regular",
+  "question": "До какого числа можно подать заявление?",
+  "relevant": [
+   "rules_2_1",
+   "rules_2_3",
+   "rules_2_34",
+   "rules_4_13"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q03",
+  "type": "regular",
+  "question": "Можно ли подать документы через Госуслуги, не приезжая?",
+  "relevant": [
+   "rules_2_8",
+   "rules_2_12",
+   "rules_2_16",
+   "rules_2_31",
+   "rules_4_9"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q04",
+  "type": "regular",
+  "question": "На сколько направлений можно подать заявление одновременно?",
+  "relevant": [
+   "rules_2_10",
+   "rules_2_11",
+   "rules_2_12"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q05",
+  "type": "regular",
+  "question": "Когда публикуют списки зачисленных?",
+  "relevant": [
+   "rules_4_3",
+   "rules_4_10",
+   "rules_4_11",
+   "rules_4_16"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q06",
+  "type": "regular",
+  "question": "Что такое согласие на зачисление и когда его подавать?",
+  "relevant": [
+   "rules_2_35",
+   "rules_2_38",
+   "rules_4_9",
+   "rules_4_10"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q07",
+  "type": "regular",
+  "question": "Сколько баллов ЕГЭ минимум нужно по математике?",
+  "relevant": [
+   "app01_t01",
+   "app01_t09",
+   "app01_t11",
+   "app01_t14",
+   "rules_1_5",
+   "rules_2_36"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q08",
+  "type": "regular",
+  "question": "Я окончил колледж — можно ли мне сдавать экзамены в университете вместо ЕГЭ?",
+  "relevant": [
+   "app02_1",
+   "app02_2",
+   "app02_3",
+   "app02_4",
+   "app02_6",
+   "rules_1_5_2",
+   "rules_3_5"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q09",
+  "type": "regular",
+  "question": "Можно ли поступить на второе высшее бесплатно?",
+  "relevant": [
+   "app03_2",
+   "app03_3",
+   "app03_5",
+   "rules_1_5_5",
+   "rules_2_4_2",
+   "rules_2_11"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q10",
+  "type": "regular",
+  "question": "Что дают победителю олимпиады при поступлении?",
+  "relevant": [
+   "app05_1",
+   "app05_3",
+   "app05_6",
+   "app05_7",
+   "rules_2_24",
+   "rules_2_25"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q11",
+  "type": "regular",
+  "question": "За что можно получить дополнительные баллы к ЕГЭ?",
+  "relevant": [
+   "app06_t01",
+   [
+    "app06_t03",
+    "app06_t04",
+    "app06_t05"
+   ],
+   "app06_t10",
+   "app06_note_2",
+   "rules_2_26",
+   "rules_4_1"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q12",
+  "type": "regular",
+  "question": "Даёт ли значок ГТО дополнительные баллы?",
+  "relevant": [
+   [
+    "app06_t03",
+    "app06_t04",
+    "app06_t05"
+   ],
+   "app06_note_2",
+   "app06_note_3",
+   "app06_note_4",
+   "rules_2_26"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q13",
+  "type": "regular",
+  "question": "Какие направления подготовки есть в университете?",
+  "relevant": [
+   "app08_1_t01",
+   "app08_1_t25",
+   "app08_1_t24",
+   "rules_2_2"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q14",
+  "type": "regular",
+  "question": "Как поступить по целевому направлению от предприятия?",
+  "relevant": [
+   "rules_1_17",
+   "rules_2_19",
+   "rules_2_4_3",
+   "rules_2_37",
+   "rules_4_8",
+   "app08_3_t01"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q15",
+  "type": "regular",
+  "question": "Как проходят вступительные экзамены в университете?",
+  "relevant": [
+   "app10_1_4",
+   "app10_1_7_1",
+   "app10_1_15",
+   "app10_2_1",
+   "rules_3_4",
+   "rules_3_11"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q16",
+  "type": "regular",
+  "question": "Можно ли слабослышащему сдавать экзамен письменно?",
+  "relevant": [
+   "app11_1",
+   "app11_5",
+   "app11_6",
+   "rules_3_12",
+   "app10_1_13"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q17",
+  "type": "regular",
+  "question": "Будет ли на экзамене сурдопереводчик?",
+  "relevant": [
+   "app11_4",
+   "app11_5",
+   "app11_A_2",
+   "app11_A_3",
+   "app11_A_6"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q18",
+  "type": "regular",
+  "question": "Дают ли инвалидам дополнительное время на экзамене?",
+  "relevant": [
+   "app11_4",
+   "app10_1_13",
+   "app10_1_15",
+   "app10_1_17"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q19",
+  "type": "regular",
+  "question": "Какую справку об инвалидности нужно показать, чтобы получить особые условия на экзамене?",
+  "relevant": [
+   "rules_2_21",
+   "rules_1_16",
+   "app11_6",
+   "app10_1_13"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q20",
+  "type": "regular",
+  "question": "Есть ли отдельная квота для людей с инвалидностью?",
+  "relevant": [
+   "rules_1_16",
+   "rules_2_4_3",
+   "rules_2_21",
+   "rules_2_30",
+   "rules_2_37"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q21",
+  "type": "regular",
+  "question": "Дают ли общежитие первокурсникам из других городов?",
+  "relevant": [
+   "app12_1",
+   "app12_2",
+   "app12_3",
+   "app12_6",
+   "rules_2_17",
+   "rules_4_2"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q22",
+  "type": "regular",
+  "question": "Когда будут экзамены, если я поступаю без ЕГЭ?",
+  "relevant": [
+   [
+    "schedule_t02",
+    "schedule_t03"
+   ],
+   "schedule_I_1",
+   "schedule_I_2",
+   "app10_1_7",
+   "app10_1_7_1",
+   "rules_3_15"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q23",
+  "type": "regular",
+  "question": "Можно ли сдавать вступительные экзамены из дома, через интернет?",
+  "relevant": [
+   "rules_3_11",
+   "app10_1_4",
+   "app10_1_9_1",
+   "app10_1_10",
+   "app10_1_12",
+   "schedule_I_1"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q24",
+  "type": "regular",
+  "question": "Что делать, если я заболел и пропустил экзамен?",
+  "relevant": [
+   "rules_3_15",
+   "rules_3_11",
+   "app10_1_9_2",
+   "app10_2_14"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q25",
+  "type": "regular",
+  "question": "Я не согласен с оценкой за экзамен — как её оспорить?",
+  "relevant": [
+   "app10_3_3",
+   "app10_3_4",
+   "app10_3_5",
+   "rules_3_13",
+   "schedule_II_1",
+   "schedule_II_4"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q26",
+  "type": "regular",
+  "question": "Какое максимальное количество баллов можно набрать при поступлении?",
+  "relevant": [
+   "rules_4_1",
+   "rules_3_3",
+   "app06_note_2",
+   "app10_1_14"
+  ],
+  "reference": ""
+ },
+ {
+  "id": "Q27",
+  "type": "regular",
+  "question": "Кого возьмут, если у двух абитуриентов одинаковые баллы?",
+  "relevant": [
+   "rules_4_4",
+   "rules_1_15",
+   "rules_4_3_1",
+   "app01_t15"
+  ],
+  "reference": ""
+ }
+]
